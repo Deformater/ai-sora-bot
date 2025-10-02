@@ -1,0 +1,2 @@
+class GenerationStartException(Exception):
+    pass

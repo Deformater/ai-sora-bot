@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  veo3-bot:
+    container_name: test-veo3-bot
+    build: .
+    restart: always
+    volumes:
+      - ./data:/app/data
+      - ./app:/app/app
+    env_file:
+      - .env
+    environment:
+      - TZ=Europe/Moscow
+    ports:
+      - "6655:8080"
+    depends_on:
+      - rabbitmq
+      - redis
+    
+  callback:
+    container_name: test-callback
+    build:
+      context: .
+      dockerfile: Fastapi.Dockerfile
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "6654:8000"
+    depends_on:
+      - rabbitmq
+    
+  # postgres:
+  #   image: postgres:15
+  #   env_file:
+  #     - .env
+  #   environment:
+  #     POSTGRES_USER: ${POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #     POSTGRES_DB: ${POSTGRES_DB}
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   ports:
+  #     - "6543:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: test-redis
+    restart: always
+    volumes:
+      - redis-data:/data
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    restart: always
+    container_name: test-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "6757:5672"
+      - "34695:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  postgres_data:
+  redis-data:
+  rabbitmq_data:
