@@ -85,7 +85,7 @@ async def yookassa_webhook(request: Request, session=Depends(get_session)):
         if payment_type == "CREDITS":
             await bot.send_message(
                 data["user_id"],
-                f"✅ Оплата прошла успешно! вам начисленно {data['credits']} генераций.",
+                f"✅ Оплата прошла успешно! Вы получили 💎 {data['credits']} генераци{'ю' if data['credits'] == 1 else 'й'}!",
             )
         else:
             await bot.send_message(
@@ -96,6 +96,6 @@ async def yookassa_webhook(request: Request, session=Depends(get_session)):
     else:
         await bot.send_message(
             data["object"]["metadata"]["user_id"],
-            f"❌ Ошибка оплаты.",
+            f"❌ Вы не оплатили ваш заказ(",
         )
     return {"status": "ok"}

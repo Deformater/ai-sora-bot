@@ -43,6 +43,7 @@ class SoraGeneration(StatesGroup):
 async def sora_callback(
     callback: types.CallbackQuery, state: FSMContext, session: AsyncSession
 ):
+    await state.clear()
     await state.set_state(SoraGeneration.choosing_props)
 
     user_id = callback.from_user.id
@@ -202,7 +203,7 @@ async def process_prompt(
     cost = 1
 
     if not format or not quality:
-        await message.answer("❌ Ошибка: не выбрана модель генерации")
+        await message.answer("❌ Ошибка: попробуйте выбрать параметры генерации заново")
         await state.clear()
         return
 
@@ -232,6 +233,8 @@ async def process_prompt(
         return
 
     if message.photo:
+        await message.answer("❌ Генерация по фото пока в разработке, попробуйте ещё раз:")
+        return
         photo = message.photo[-1]
         file = await bot.get_file(photo.file_id)
         image_url = f"https://api.telegram.org/file/bot{settings.TELEGRAM_TOKEN}/{file.file_path}"

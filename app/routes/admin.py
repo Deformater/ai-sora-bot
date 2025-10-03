@@ -1,3 +1,4 @@
+import json
 import logging
 import random
 import string
@@ -8,9 +9,11 @@ from aiogram.types import CallbackQuery, Message, InputMediaPhoto
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.keyboard import InlineKeyboardBuilder
+import requests
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.callback import CreateLinkCallback
+from app.config.utils import get_settings
 from app.db.database import DatabaseManager
 from app.keyboard import (
     multix_keyboard,
@@ -24,6 +27,7 @@ admin_router = Router()
 admin_states = {}
 logger = logging.getLogger(__name__)
 db = DatabaseManager
+settings = get_settings()
 
 
 class LinkCreation(StatesGroup):
@@ -200,3 +204,25 @@ async def process_prompt(
     await link_admin_command(message, bot, session)
 
     await state.clear()
+
+
+@admin_router.message(Command("credits"))
+async def link_admin_command(message: Message, bot: Bot, session: AsyncSession):
+    user = await db.get_user(session, message.chat.id)
+    if not user.is_admin:
+        return
+
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {settings.KIEAI_API_KEY}",
+    }
+
+    response = requests.request(
+        "GET", "https://api.kie.ai/api/v1/chat/credit", headers=headers,
+    )
+    credits = response.json()["data"]
+    await bot.send_message(
+        chat_id=user.user_id,
+        text=f"Осталось кредитов {credits}" 
+    )

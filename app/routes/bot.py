@@ -242,13 +242,24 @@ async def show_plans_callback(callback: types.CallbackQuery, session: AsyncSessi
         plan = "STARS"
     prices = await db.get_prices_by_type_and_currency(session, "CREDITS", plan)
     for price in prices:
-        keyboard.button(
-            text=f"💎 {price.credits} генераций - {str(price.price) + '₽' if pay_method == 'pay_rub' else str(price.price) + '⭐️'}",
-            callback_data=f"{pay_method}_{price.plan_id}",
-        )
+        if price.credits == 1:
+            keyboard.button(
+                text=f"💎 {price.credits} генерация - {str(price.price) + '₽' if pay_method == 'pay_rub' else str(price.price) + '⭐️'}",
+                callback_data=f"{pay_method}_{price.plan_id}",
+            )
+        elif price.credits == 10:
+            keyboard.button(
+                text=f"🔥 💎 {price.credits} генераций - {str(price.price) + '₽' if pay_method == 'pay_rub' else str(price.price) + '⭐️'} 🔥",
+                callback_data=f"{pay_method}_{price.plan_id}",
+            )
+        else:
+            keyboard.button(
+                text=f"💎 {price.credits} генераций - {str(price.price) + '₽' if pay_method == 'pay_rub' else str(price.price) + '⭐️'}",
+                callback_data=f"{pay_method}_{price.plan_id}",
+            )
+    keyboard.button(text="◀️ Назад", callback_data=BuyCreditsCallback())
     keyboard.adjust(1)
-    keyboard.add("◀️ Назад", callback_data=BuyCreditsCallback())
-    await callback.message.edit(
+    await callback.message.edit_text(
         "Выберите план подписки:", reply_markup=keyboard.as_markup()
     )
 
